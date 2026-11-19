@@ -17,7 +17,8 @@ engine, blood_eval, stats_df, df_race_index = load_assets()
 u_shutuba = base64.b64decode("aHR0cHM6Ly9yYWNlLm5ldGtlaWJhLmNvbS9yYWNlL3NodXR1YmEuaHRtbD9yYWNlX2lkPQ==").decode()
 u_horse   = base64.b64decode("aHR0cHM6Ly9kYi5uZXRrZWliYS5jb20vaG9yc2Uv").decode()
 u_top     = base64.b64decode("aHR0cHM6Ly9yYWNlLm5ldGtlaWJhLmNvbS90b3Av").decode()
-g_api_url = base64.b64decode("aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudD9rZXk9").decode() + base64.b64decode("QVEuQWI4Uk42Smg4QkxES3BuU0FqRi0xVWcxTjZVNTdlUS1nRTFNOHYxQzZhOEM2azN6cUZB").decode()
+g_api_url = base64.b64decode("aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==").decode()
+g_api_key = base64.b64decode("QVEuQWI4Uk42SUhGYmprZkNLWFFVMWVmenJhZWp0S1hiOXRtSE1vVVIxZm1TOHJ2dWRYLXc=").decode()
 headers = {'User-Agent': 'Mozilla/5.0'}
 
 if "messages" not in st.session_state: st.session_state.messages = []
@@ -129,7 +130,7 @@ def ask_gemini(rname, dist, shiba, bias, b_note, user_msg, tbl_txt, base_txt):
 {tbl_txt}
 【出力構成】: 1.「🧠 【Gemini軍師 展開＆文脈精査】」でペース展開・有利脚質・軸馬の死角有無を解説。2.「🎯 【最終統合結論（3連複 1-3-7 ＆ 穴穴ワイド）】」で◎1列目(1)・○2列目(3)・△3列目(7)・★穴穴ワイドを根拠付きで提示。※着順結果は絶対に参照しないこと。"""
     try:
-        res = requests.post(g_api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
+        res = requests.post(g_api_url, headers={"Content-Type": "application/json", "x-goog-api-key": g_api_key}, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
         if res.status_code == 200:
             cands = res.json().get("candidates", [])
             if cands: return cands.__getitem__(0)["content"]["parts"].__getitem__(0)["text"]
