@@ -80,13 +80,12 @@ def get_ped(hid):
 
 def get_local_ped(bname):
     try:
-        pm = pd.read_csv("past_races_mini.csv")
-        sub = pm[pm["馬名"].astype(str).str.strip() == str(bname).strip()]
+        sub = stats_df[stats_df["馬名"].astype(str).str.strip() == str(bname).strip()]
         if len(sub) > 0:
             r = sub.iloc.__getitem__(0)
-            s = str(r["父"]) if "父" in pm.columns and pd.notna(r["父"]) else "不明"
-            bm = str(r["母父"]) if "母父" in pm.columns and pd.notna(r["母父"]) else "不明"
-            return s, bm, "不明"
+            s = str(r["父"]) if "父" in stats_df.columns and pd.notna(r["父"]) else "不明"
+            bm = str(r["母父"]) if "母父" in stats_df.columns and pd.notna(r["母父"]) else "不明"
+            if s != "不明": return s, bm, "不明"
     except: pass
     return "不明", "不明", "不明"
 
@@ -175,8 +174,8 @@ def _generate_reply_core(msg):
     df_e['距離変化'] = df_e['距離'] - df_e['前走距離']
     res_a = engine.run_mode_a_single_race(df_e, meta)
     ax = res_a['1列目_軸1頭']
-    base_txt = f"◎軸: {int(ax['馬番'])}番 {ax['馬名']}(指数:{ax['総合ロジック指数']})\n○2列目: " + ", ".join([f"{int(r['馬番'])}番{r['馬名']}" for _, r in res_a['2列目_対抗激走3頭'].iterrows()]) + "\n△3列目: " + ", ".join([f"{int(r['馬番'])}番{r['馬名']}" for _, r in res_a['3列目_ヒモ網羅7頭以上'].iterrows()]) + "\n★穴穴ワイド: " + ", ".join([f"{int(r['馬番'])}番{r['馬名']}" for _, r in res_a['穴穴ワイド独立発注対象'].iterrows()])
-    tbl_txt = "\n".join([f"{int(df_e[df_e['馬番']==r['馬番']].iloc.__getitem__(0)['枠番'])}枠{int(r['馬番'])}番 {r['馬名']} | {r['血統表記']}({r['血統評価']}) | 指数:{r['総合ロジック指数']} | 前走:{df_e[df_e['馬番']==r['馬番']].iloc.__getitem__(0).get('前走着順','?')}着/上り{df_e[df_e['馬番']==r['馬番']].iloc.__getitem__(0).get('前走上り','?')}s" for _, r in res_a['全頭評価表'].iterrows()])
+    base_txt = f"- **◎軸**: {int(ax['馬番'])}番 {ax['馬名']}(指数:{ax['総合ロジック指数']})\n- **○2列目**: " + ", ".join([f"{int(r['馬番'])}番{r['馬名']}" for _, r in res_a['2列目_対抗激走3頭'].iterrows()]) + "\n- **△3列目**: " + ", ".join([f"{int(r['馬番'])}番{r['馬名']}" for _, r in res_a['3列目_ヒモ網羅7頭以上'].iterrows()]) + "\n- **★穴穴ワイド**: " + ", ".join([f"{int(r['馬番'])}番{r['馬名']}" for _, r in res_a['穴穴ワイド独立発注対象'].iterrows()])
+    tbl_txt = "\n".join(["- " + f"{int(df_e[df_e['馬番']==r['馬番']].iloc.__getitem__(0)['枠番'])}枠{int(r['馬番'])}番 {r['馬名']} | {r['血統表記']}({r['血統評価']}) | 指数:{r['総合ロジック指数']} | 前走:{df_e[df_e['馬番']==r['馬番']].iloc.__getitem__(0).get('前走着順','?')}着/上り{df_e[df_e['馬番']==r['馬番']].iloc.__getitem__(0).get('前走上り','?')}s" for _, r in res_a['全頭評価表'].iterrows()])
     full_logic_out = f"### 🏆 【モードA：単体レースモード】({rname})\n{b_note}\n**条件**: {'芝' if shiba==1 else 'ダート'}{dist}m / 実測バイアス:**{bias}**\n\n{base_txt}\n\n#### 📋 全出走馬・3代血統＆指数一覧\n{tbl_txt}"
     g_out = ask_gemini(rname, dist, shiba, bias, b_note, msg, tbl_txt, full_logic_out)
     return g_out
