@@ -134,7 +134,12 @@ def generate_reply(msg):
     cache = st.session_state.cache
     if rid:
         horses = fetch_horses(rid)
-        if not horses: return f"「{rname}」の出馬表がまだ公開されていないようだ、ボス。"
+        if not horses:
+            pm_info = "CSVなし"
+            if os.path.exists("past_races_mini.csv"):
+                _pm = pd.read_csv("past_races_mini.csv", dtype=str)
+                pm_info = f"CSV行数:{len(_pm)} / 最新ID例:{_pm['race_id'].iloc[-1] if len(_pm)>0 else '無'}"
+            return f"「{rname}」(ID:{rid}) のデータが見つからないようだ、ボス。（状況: {pm_info}）"
         dist = adist if adist else (1600 if 'マイル' in msg else (2000 if '福島' in msg else 1800))
         shiba = ashiba if ashiba else (2 if 'ダート' in msg else 1)
         cache.update({'rid': rid, 'rname': rname, 'dist': dist, 'shiba': shiba, 'raw': [(w, u, b, *get_ped(h), br, k, wt) for w, u, b, h, br, k, wt in horses]})
