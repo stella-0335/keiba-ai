@@ -37,12 +37,16 @@ def interpret_bias(text):
     return '良', '【標準判定】公式馬場（良・標準）ベースで判定'
 
 def resolve_race(q):
-    yr_m = re.search(r'(202\d)', q); yr = yr_m.group(1) if yr_m else "2026"
-    rm = re.search(r'([ァ-ヶー一-龠A-Za-z0-9]+?(?:女王杯|共和国杯|ジャパンカップ|カップ|杯|賞|記念|ステークス|S|CS|ダービー|オークス|チャンピオンシップ|マイルC|スプリンターズ|宝塚|有馬|菊花|皐月|桜花|天皇|安田|ヴィクトリア|フェブラリー|ホープフル))', q)
-    cn = rm.group(1) if rm else ""
-    if cn.startswith(yr): cn = cn[4:]
-    cn = re.sub(r'^年', '', cn).strip()
-    if not cn or len(cn) > 18: return None, None, None, None
+    yr_m = re.search(r'(202\d)', q)
+    yr = yr_m.group(1) if yr_m else "2026"
+    # 文章から不要な指示語だけを削り、純粋なレース名キーワードを残す
+    cn = re.sub(r'202\d年?', '', q)
+    for w in ['の予想を単体レースモードでして', '単体レースモードで', 'の予想をして', 'の予想して', '予想をして', '予想して', 'の予想', '予想', 'を', 'して', 'ください', '教えて', '頼む', 'お願い']:
+        cn = cn.replace(w, '')
+    cn = cn.strip()
+    if not cn or len(cn) > 20:
+        return None, None, None, None
+    # 1. まず開催中の出馬表トップから検索
     try:
         soup = BeautifulSoup(decode_auto(requests.get(u_top, headers=headers, timeout=10).content), 'html.parser')
         for a in soup.find_all('a', href=True):
@@ -50,11 +54,18 @@ def resolve_race(q):
                 m = re.search(r'race_id=(\d{12})', a['href'])
                 if m: return m.group(1), a.text.strip(), None, None
     except: pass
-    sub = df_race_index[df_race_index['race_id'].str.startswith(yr)]
-    hit = sub[sub['レース名'].str.contains(re.escape(cn), na=False)]
-    if len(hit) > 0:
-        r = hit.iloc.__getitem__(-1); dm = re.search(r'(\d{4})m', str(r['レース詳細']))
-        return r['race_id'], f"{yr}年 {r['レース名']}", (int(dm.group(1)) if dm else 2000), (2 if 'ダ' in str(r['レース詳細']) else 1)
+    # 2. race_index.csv から指定年で検索（表記ゆれ対策：CS→チャンピオンシップ、S→ステークス）
+    aliases = [cn]
+    if 'マイルCS' in cn: aliases.append('マイルチャンピオンシップ')
+    if 'ジャパンC' in cn and 'カップ' not in cn: aliases.append('ジャパンカップ')
+    if cn.endswith('S'): aliases.append(cn[:-1] + 'ステークス')
+    sub = df_race_index[df_race_index['race_id'].astype(str).str.startswith(yr)]
+    for kw in aliases:
+        hit = sub[sub['レース名'].astype(str).str.contains(re.escape(kw), na=False)]
+        if len(hit) > 0:
+            r = hit.iloc.__getitem__(-1)
+            dm = re.search(r'(\d{4})m', str(r['レース詳細']))
+            return str(r['race_id']).strip(), f"{yr}年 {r['レース名']}", (int(dm.group(1)) if dm else 2000), (2 if 'ダ' in str(r['レース詳細']) else 1)
     return None, None, None, None
 
 def get_ped(hid):
