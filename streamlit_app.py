@@ -38,7 +38,7 @@ def interpret_bias(text):
 
 def resolve_race(q):
     yr_m = re.search(r'(202\d)', q); yr = yr_m.group(1) if yr_m else "2026"
-    rm = re.search(r'([ァ-ヶー一-龠A-Za-z0-9]+?(?:女王杯|共和国杯|杯|賞|記念|ステークス|S|CS|ダービー|オークス|チャンピオンシップ|マイルC|スプリンターズ|宝塚|有馬|菊花|皐月|桜花|天皇|安田|ヴィクトリア|フェブラリー|ホープフル))', q)
+    rm = re.search(r'([ァ-ヶー一-龠A-Za-z0-9]+?(?:女王杯|共和国杯|ジャパンカップ|カップ|杯|賞|記念|ステークス|S|CS|ダービー|オークス|チャンピオンシップ|マイルC|スプリンターズ|宝塚|有馬|菊花|皐月|桜花|天皇|安田|ヴィクトリア|フェブラリー|ホープフル))', q)
     cn = rm.group(1) if rm else ""
     if cn.startswith(yr): cn = cn[4:]
     cn = re.sub(r'^年', '', cn).strip()
