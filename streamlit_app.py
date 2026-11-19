@@ -82,19 +82,35 @@ def fetch_horses(rid):
             horses.append((w_td.text.strip() if w_td else '0', u_td.text.strip() if u_td else '0', nt.text.strip(), hm.group(1) if hm else '', b_td.text.strip() if b_td else '牡4', k_td.text.strip() if k_td else '56.0', wt_td.text.strip() if wt_td else '480(0)'))
     except: pass
     if horses: return horses
-    # 2. 終了済みレースはローカルの past_races_mini.csv から確実に抽出
-    if os.path.exists("past_races_mini.csv"):
-        pm = pd.read_csv("past_races_mini.csv")
-        pm['race_id_str'] = pm['race_id'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
-        sub_pm = pm[pm['race_id_str'] == str(rid).strip()]
-        if len(sub_pm) > 0:
-            for _, row in sub_pm.iterrows():
-                w_v = str(int(row['枠番'])) if pd.notna(row.get('枠番')) else '0'
-                u_v = str(int(row['馬番'])) if pd.notna(row.get('馬番')) else '0'
-                wt_s = f"{int(row['馬体重_num'])}({int(row.get('体重増減', 0)):+d})" if pd.notna(row.get('馬体重_num')) else "480(0)"
-                horses.append((w_v, u_v, str(row['馬名']), 'LOCAL', str(row.get('性齢', '牡4')), str(row.get('斤量', '56.0')), wt_s))
-            return horses
+    # 2. 終了済みレースの場合は過去DB(db.netkeiba)の全テーブルから馬リンクを持つ行を抽出
+    try:
+        soup_db = BeautifulSoup(decode_auto(requests.get(u_db_race + rid + "/", headers=headers, timeout=10).content), 'html.parser')
+        for tr in soup_db.find_all('tr'):
+            tds = tr.find_all('td')
+            if len(tds) >= 10:
+                a_h = tr.find('a', href=re.compile(r'/horse/\d+'))
+                if a_h:
+                    hm = re.search(r'/horse/(\d+)', a_h['href'])
+                    w_txt = tds.__getitem__(1).text.strip()
+                    u_txt = tds.__getitem__(2).text.strip()
+                    br_txt = tds.__getitem__(4).text.strip() if len(tds) > 4 else '牡4'
+                    k_txt = tds.__getitem__(5).text.strip() if len(tds) > 5 else '56.0'
+                    wt_txt = tds.__getitem__(14).text.strip() if len(tds) > 14 else '480(0)'
+                    if u_txt.isdigit():
+                        horses.append((w_txt if w_txt.isdigit() else '0', u_txt, a_h.text.strip(), hm.group(1) if hm else '', br_txt, k_txt, wt_txt))
+    except: pass
     return horses
+
+
+def get_local_ped(bname):
+    try:
+        pm = pd.read_csv('past_races_mini.csv')
+        sub = pm[pm['馬名'].astype(str).str.strip() == str(bname).strip()]
+        if len(sub) > 0:
+            r = sub.iloc.__getitem__(0)
+            return str(r['父']) if '父' in r and pd.notna(r['父']) else '不明', str(r['母父']) if '母父' in r and pd.notna(r['母父']) else '不明', '不明'
+    except: pass
+    return '不明', '不明', '不明'
 
 def ask_gemini(rname, dist, shiba, bias, b_note, user_msg, tbl_txt, base_txt):
     prompt = f"""あなたはボスの専用競馬予想AI軍師です。過去5年機械学習＋3代血統ロジックの一次データ（下記）に、あなた自身の展開予測・騎手心理・コース力学・前走不利の質・リアルバイアス（{user_msg}）を統合して最終結論を出してください。
@@ -121,7 +137,7 @@ def generate_reply(msg):
         if not horses: return f"「{rname}」の出馬表がまだ公開されていないようだ、ボス。"
         dist = adist if adist else (1600 if 'マイル' in msg else (2000 if '福島' in msg else 1800))
         shiba = ashiba if ashiba else (2 if 'ダート' in msg else 1)
-        cache.update({'rid': rid, 'rname': rname, 'dist': dist, 'shiba': shiba, 'raw': [(w, u, b, *( (str(pd.read_csv('past_races_mini.csv').query('馬名 == @b').iloc[0]['父']), str(pd.read_csv('past_races_mini.csv').query('馬名 == @b').iloc[0]['母父']), '不明') if h=='LOCAL' else get_ped(h) ), br, k, wt) for w, u, b, h, br, k, wt in horses]})
+        cache.update({'rid': rid, 'rname': rname, 'dist': dist, 'shiba': shiba, 'raw': [(w, u, b, *get_ped(h), br, k, wt) for w, u, b, h, br, k, wt in horses]})
     elif cache['raw'] is not None: rid, rname, dist, shiba = cache['rid'], cache['rname'], cache['dist'], cache['shiba']
     else: return "まずレース名（例：『マイルCSの予想して』）を送ってくれ、ボス。"
 
