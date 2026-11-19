@@ -138,6 +138,12 @@ def ask_gemini(rname, dist, shiba, bias, b_note, user_msg, tbl_txt, base_txt):
     except: return "（※Gemini通信エラーのためロジック単体結果を出力）\n\n" + base_txt
 
 def generate_reply(msg):
+    try:
+        return _generate_reply_core(msg)
+    except Exception as e:
+        return ask_gemini(msg, 2000, 1, "良", "データ補完モード", msg, f"（一次データ一部欠損のためGemini軍師が直接精査: {e}）", "ロジックデータ補完中")
+
+def _generate_reply_core(msg):
     bias, b_note = interpret_bias(msg)
     rid, rname, adist, ashiba, kw = resolve_race(msg)
     cache = st.session_state.cache
