@@ -110,13 +110,13 @@ def fetch_horses(rid):
             w_col = "枠番" if "枠番" in pm.columns else ("枠" if "枠" in pm.columns else None)
             u_col = "馬番" if "馬番" in pm.columns else None
             for idx_r, row in sub_pm.iterrows():
-                w_v = str(int(row[w_col])) if w_col and pd.notna(row[w_col]) else "0"
-                u_v = str(int(row[u_col])) if u_col and pd.notna(row[u_col]) else str(idx_r + 1)
+                w_v = str(int(float(row[w_col]))) if w_col and pd.notna(row[w_col]) else "0"
+                u_v = str(int(float(row[u_col]))) if u_col and pd.notna(row[u_col]) else str(idx_r + 1)
                 b_v = str(row["馬名"]) if "馬名" in pm.columns else "不明"
                 br_v = str(row["性齢"]) if "性齢" in pm.columns and pd.notna(row["性齢"]) else "牡4"
                 k_v = str(row["斤量"]) if "斤量" in pm.columns and pd.notna(row["斤量"]) else "56.0"
-                wt_num = int(row["馬体重_num"]) if "馬体重_num" in pm.columns and pd.notna(row["馬体重_num"]) else 480
-                wt_diff = int(row["体重増減"]) if "体重増減" in pm.columns and pd.notna(row["体重増減"]) else 0
+                wt_num = int(float(row["馬体重_num"])) if "馬体重_num" in pm.columns and pd.notna(row["馬体重_num"]) else 480
+                wt_diff = int(float(row["体重増減"])) if "体重増減" in pm.columns and pd.notna(row["体重増減"]) else 0
                 horses.append((w_v, u_v, b_v, "LOCAL", br_v, k_v, f"{wt_num}({wt_diff:+d})"))
             return horses
     return horses
