@@ -19,7 +19,7 @@ u_db_race = base64.b64decode("aHR0cHM6Ly9kYi5uZXRrZWliYS5jb20vcmFjZS8=").decode(
 u_horse   = base64.b64decode("aHR0cHM6Ly9kYi5uZXRrZWliYS5jb20vaG9yc2Uv").decode()
 u_top     = base64.b64decode("aHR0cHM6Ly9yYWNlLm5ldGtlaWJhLmNvbS90b3Av").decode()
 g_api_url = base64.b64decode("aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudD9rZXk9").decode() + base64.b64decode("QVEuQWI4Uk42Smg4QkxES3BuU0FqRi0xVWcxTjZVNTdlUS1nRTFNOHYxQzZhOEM2azN6cUZB").decode()
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+headers = {'User-Agent': 'Mozilla/5.0'}
 if "messages" not in st.session_state: st.session_state.messages = []
 if "cache" not in st.session_state: st.session_state.cache = {'rid': None, 'rname': None, 'dist': 2000, 'shiba': 1, 'raw': None}
 
