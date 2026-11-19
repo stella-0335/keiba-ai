@@ -141,7 +141,11 @@ def generate_reply(msg):
     try:
         return _generate_reply_core(msg)
     except Exception as e:
-        return ask_gemini(msg, 2000, 1, "良", "データ補完モード", msg, f"（一次データ一部欠損のためGemini軍師が直接精査: {e}）", "ロジックデータ補完中")
+        import traceback; return f"⚠️ 内部エラー詳細:\n```\n{traceback.format_exc()}\n```"
+
+def _to_int(v, d=0):
+    try: return int(float(str(v).strip()))
+    except: return d
 
 def _generate_reply_core(msg):
     bias, b_note = interpret_bias(msg)
