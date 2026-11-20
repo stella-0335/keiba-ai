@@ -151,7 +151,7 @@ def ask_gemini(*args, **kwargs):
     last_err = None
     for attempt in range(2):
         try:
-            res = requests.post(g_api_url, headers={'Content-Type': 'application/json', 'x-goog-api-key': g_api_key}, json={'contents': [{'parts': [{'text': prompt}]}]}, timeout=30)
+            res = requests.post(g_api_url, headers={'Content-Type': 'application/json', 'x-goog-api-key': g_api_key}, json={'contents': [{'parts': [{'text': prompt}]}]}, timeout=55)
             if res.status_code == 200:
                 cands = res.json().get('candidates', [])
                 if cands: return cands[0]['content']['parts'][0]['text']
