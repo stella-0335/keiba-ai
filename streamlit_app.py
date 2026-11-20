@@ -129,6 +129,22 @@ def fetch_horses(rid):
             return horses
     return horses
 
+def ask_gemini(rname, dist, shiba, base_txt, tbl_txt):
+    prompt = f"""あなたはボスの軍師です。{rname}({"芝" if shiba else "ダート"}{dist}m)の予想をしてください。\n【一次算出】\n{base_txt}\n【出走馬】\n{tbl_txt}"""
+    import time
+    last_err = None
+    for attempt in range(2):
+        try:
+            res = requests.post(g_api_url, headers={"Content-Type": "application/json", "x-goog-api-key": g_api_key}, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
+            if res.status_code == 200:
+                cands = res.json().get("candidates", [])
+                if cands: return cands[0]["content"]["parts"][0]["text"]
+            last_err = f"HTTP {res.status_code}: {res.text[:200]}"
+        except Exception as e:
+            last_err = f"{type(e).__name__}: {e}"
+        if attempt == 0: time.sleep(2)
+    return f"（※Gemini詳細: {last_err}\n\n" + base_txt
+
 def ask_gemini(rname, dist, shiba, bias, b_note, user_msg, tbl_txt, base_txt):
     prompt = f"""あなたはボスの専用競馬予想AI軍師です。過去5年機械学習＋3代血統ロジックの一次データ（下記）に、あなた自身の展開予測・騎手心理・コース力学・前走不利の質・リアルバイアス（{user_msg}）を統合して最終結論を出してください。
 【対象】: {rname}（{'芝' if shiba==1 else 'ダート'}{dist}m / 実測:{bias} / {b_note}）
