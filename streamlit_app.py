@@ -17,7 +17,7 @@ engine, blood_eval, stats_df, df_race_index = load_assets()
 u_shutuba = base64.b64decode("aHR0cHM6Ly9yYWNlLm5ldGtlaWJhLmNvbS9yYWNlL3NodXR1YmEuaHRtbD9yYWNlX2lkPQ==").decode()
 u_horse   = base64.b64decode("aHR0cHM6Ly9kYi5uZXRrZWliYS5jb20vaG9yc2Uv").decode()
 u_top     = base64.b64decode("aHR0cHM6Ly9yYWNlLm5ldGtlaWJhLmNvbS90b3Av").decode()
-g_api_url = base64.b64decode("aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==").decode()
+g_api_url = base64.b64decode("aHR0cHM6Ly9nb29nbGVhcGlzLmNvbQ==").decode()
 g_api_key = base64.b64decode("QVEuQWI4Uk42SUhGYmprZkNLWFFVMWVmenJhZWp0S1hiOXRtSE1vVVIxZm1TOHJ2dWRYLXc=").decode()
 headers = {'User-Agent': 'Mozilla/5.0'}
 
