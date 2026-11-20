@@ -42,6 +42,15 @@ def interpret_bias(text):
     return '良', '【標準判定】公式馬場（良・標準）ベースで判定'
 
 def resolve_race(q):
+    m_id = re.search(r'(202\d{9})', q)
+    if m_id:
+        return m_id.group(1), f"レースID:{m_id.group(1)}", None, None, m_id.group(1)
+    if 'マイル' in q and '2025' not in q:
+        return '202608050611', '2026年 マイルチャンピオンシップ(GI)', 1600, 1, 'マイルCS'
+    if '福島記念' in q and '2025' not in q:
+        return '202603030511', '2026年 福島記念(GIII)', 2000, 1, '福島記念'
+    if ('東スポ' in q or '東京スポーツ' in q) and '2025' not in q:
+        return '202605050611', '2026年 東京スポーツ杯2歳S(GII)', 1800, 1, '東スポ杯2歳S'
     yr_m = re.search(r'(202\d)', q)
     yr = yr_m.group(1) if yr_m else "2026"
     cn = re.sub(r'202\d年?', '', q)
