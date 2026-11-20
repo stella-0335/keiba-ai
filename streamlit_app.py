@@ -130,9 +130,6 @@ def fetch_horses(rid):
     return horses
 
 def ask_gemini(*args, **kwargs):
-    _hybrid_rule = """【ChatGPT流・超簡潔モード＋別案】
-出力は短く要点のみ。1.出走馬と注目点 2.暫定ランク(S/A/B) 3.人気馬の死角 4.穴候補 5.展開→陣形を各1〜2行で整理。
-ボスの見立てのハマり条件を認めつつ、逆展開・別バイアス時の「別案（プランB）」を1つ必ず併記すること。"""
     import time
     rname = kwargs.get('rname', args[0] if len(args) > 0 else '')
     dist = kwargs.get('dist', args[1] if len(args) > 1 else '')
