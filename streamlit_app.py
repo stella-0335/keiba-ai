@@ -129,21 +129,27 @@ def fetch_horses(rid):
             return horses
     return horses
 
-def ask_gemini(rname, dist, shiba, base_txt, tbl_txt):
-    prompt = f"""あなたはボスの軍師です。{rname}({"芝" if shiba else "ダート"}{dist}m)の予想をしてください。\n【一次算出】\n{base_txt}\n【出走馬】\n{tbl_txt}"""
+def ask_gemini(*args, **kwargs):
     import time
+    rname = kwargs.get('rname', args[0] if len(args) > 0 else '')
+    dist = kwargs.get('dist', args[1] if len(args) > 1 else '')
+    shiba = kwargs.get('shiba', args[2] if len(args) > 2 else True)
+    base_txt = kwargs.get('base_txt', args[-1] if len(args) >= 1 else '')
+    tbl_txt = kwargs.get('tbl_txt', args[-2] if len(args) >= 2 else '')
+    surf = '芝' if shiba else 'ダート'
+    prompt = f'あなたはボスの軍師です。{rname}({surf}{dist}m)の予想をしてください。\n【一次算出】\n{base_txt}\n【出走馬】\n{tbl_txt}'
     last_err = None
     for attempt in range(2):
         try:
-            res = requests.post(g_api_url, headers={"Content-Type": "application/json", "x-goog-api-key": g_api_key}, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
+            res = requests.post(g_api_url, headers={'Content-Type': 'application/json', 'x-goog-api-key': g_api_key}, json={'contents': [{'parts': [{'text': prompt}]}]}, timeout=30)
             if res.status_code == 200:
-                cands = res.json().get("candidates", [])
-                if cands: return cands[0]["content"]["parts"][0]["text"]
-            last_err = f"HTTP {res.status_code}: {res.text[:200]}"
+                cands = res.json().get('candidates', [])
+                if cands: return cands[0]['content']['parts'][0]['text']
+            last_err = f'HTTP {res.status_code}: {res.text[:200]}'
         except Exception as e:
-            last_err = f"{type(e).__name__}: {e}"
+            last_err = f'{type(e).__name__}: {e}'
         if attempt == 0: time.sleep(1)
-    return f"（※Gemini詳細: {last_err}\n\n" + base_txt
+    return f'（※Gemini詳細: {last_err}\n\n' + str(base_txt)
 
 def generate_reply(msg):
     bias, b_note = interpret_bias(msg)
