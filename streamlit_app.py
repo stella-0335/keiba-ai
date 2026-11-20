@@ -138,7 +138,7 @@ def ask_gemini(rname, dist, shiba, bias, b_note, user_msg, tbl_txt, base_txt):
 {tbl_txt}
 【出力構成】: 1.「🧠 【Gemini軍師 展開＆文脈精査】」でペース展開・有利脚質・軸馬の死角有無を解説。2.「🎯 【最終統合結論（3連複 1-3-7 ＆ 穴穴ワイド）】」で◎1列目(1)・○2列目(3)・△3列目(7)・★穴穴ワイドを根拠付きで提示。※着順結果は絶対に参照しないこと。"""
     try:
-        res = requests.post(g_api_url, headers={"Content-Type": "application/json", "x-goog-api-key": g_api_key}, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
+        res = requests.post(g_g_api_url, headers={"Content-Type": "application/json", "x-goog-api-key": g_api_key}, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
         if res.status_code == 200:
             cands = res.json().get("candidates", [])
             if cands: return cands.__getitem__(0)["content"]["parts"].__getitem__(0)["text"]
