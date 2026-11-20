@@ -55,13 +55,19 @@ def resolve_race(q):
     if 'ジャパンカップ' in cn: aliases.append('ジャパンC')
     elif 'ジャパンC' in cn: aliases.append('ジャパンカップ')
     if cn.endswith('S'): aliases.append(cn[:-1] + 'ステークス')
-    try:
-        soup = BeautifulSoup(decode_auto(requests.get(u_top, headers=headers, timeout=10).content), 'html.parser')
-        for a in soup.find_all('a', href=True):
-            if 'race_id=' in a['href'] and any(k in a.text.strip() for k in aliases):
-                m = re.search(r'race_id=(\d{12})', a['href'])
-                if m: return m.group(1), a.text.strip(), None, None, cn
-    except: pass
+    # 1. 今週の開催日カレンダー(今週の土曜・日曜・月曜)から直接検索
+    from datetime import datetime, timedelta
+    u_list = base64.b64decode("aHR0cHM6Ly9yYWNlLm5ldGtlaWJhLmNvbS9yYWNlL3JhY2VfbGlzdF9zdWIuaHRtbD9rYWlzYWlfZGF0ZT0=").decode()
+    base_dt = datetime.now()
+    for d_off in range(-2, 5):
+        dt_s = (base_dt + timedelta(days=d_off)).strftime("%Y%m%d")
+        try:
+            sp = BeautifulSoup(decode_auto(requests.get(u_list + dt_s, headers=headers, timeout=8).content), 'html.parser')
+            for a in sp.find_all('a', href=True):
+                if 'race_id=' in a['href'] and any(k in a.text.strip() for k in aliases):
+                    m = re.search(r'race_id=(\d{12})', a['href'])
+                    if m: return m.group(1), a.text.strip(), None, None, cn
+        except: pass
     sub = df_race_index[df_race_index['race_id'].astype(str).str.startswith(yr)]
     for kw in aliases:
         hit = sub[sub['レース名'].astype(str).str.contains(re.escape(kw), na=False)]
