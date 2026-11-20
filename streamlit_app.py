@@ -143,7 +143,7 @@ def ask_gemini(rname, dist, shiba, bias, b_note, user_msg, tbl_txt, base_txt):
             cands = res.json().get("candidates", [])
             if cands: return cands.__getitem__(0)["content"]["parts"].__getitem__(0)["text"]
         return f"（※Gemini API HTTP {res.status_code} のためロジック単体結果を出力）\n\n" + base_txt
-    except: return "（※Gemini通信エラーのためロジック単体結果を出力）\n\n" + base_txt
+    except Exception as e: return f"（※Gemini詳細:{type(e).__name__}:{e}\n\n" + 通信エラーのためロジック単体結果を出力）\n\n" + base_txt
 
 def generate_reply(msg):
     bias, b_note = interpret_bias(msg)
