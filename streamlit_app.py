@@ -130,16 +130,9 @@ def fetch_horses(rid):
     return horses
 
 def ask_gemini(*args, **kwargs):
-    _hybrid_rule = """【移植ロジック：ChatGPT流分析＋カウンター別案ルール】
-1. 構成の型（以下の流れで整理すること）：
-   - 1. 現時点の出走馬と注目ポイント（条件・枠順・注目馬ごとの持ち味と懸念）
-   - 2. 馬個体評価（暫定ランク表：決め打ちせず、3代血統・当日馬場・追い切り前の暫定評価であることを明記）
-   - 3. 人気馬の死角（「勝つ力」と「軸としての信頼度」を切り分け、休み明け・枠・展開・ペースの不安を抽出）
-   - 4. 現時点での穴候補（血統・コース適性・叩き上昇・差し展開噛み合いなどから妙味馬を抽出）
-   - 5. 展開予想 → 最終陣形（ボスの単体/WIN5ルールと接続）
-2. 全肯定禁止・別案併記ルール：
-   - ボスの仮説や軸候補を頭ごなしに否定せず、ハマる条件を認めた上で、必ず「逆の展開・別バイアスになった場合の別案（プランB）」を1つ以上提示すること。
-   - 迷いやリスクがある場合は「この見立てなら本線だが、別角度ならこの穴軸も成立する」と対抗視点を添えること。"""
+    _hybrid_rule = """【ChatGPT流・超簡潔モード＋別案】
+出力は短く要点のみ。1.出走馬と注目点 2.暫定ランク(S/A/B) 3.人気馬の死角 4.穴候補 5.展開→陣形を各1〜2行で整理。
+ボスの見立てのハマり条件を認めつつ、逆展開・別バイアス時の「別案（プランB）」を1つ必ず併記すること。"""
     import time
     rname = kwargs.get('rname', args[0] if len(args) > 0 else '')
     dist = kwargs.get('dist', args[1] if len(args) > 1 else '')
@@ -151,7 +144,7 @@ def ask_gemini(*args, **kwargs):
     last_err = None
     for attempt in range(2):
         try:
-            res = requests.post(g_api_url, headers={'Content-Type': 'application/json', 'x-goog-api-key': g_api_key}, json={'contents': [{'parts': [{'text': prompt}]}]}, timeout=55)
+            res = requests.post(g_api_url, headers={'Content-Type': 'application/json', 'x-goog-api-key': g_api_key}, json={'contents': [{'parts': [{'text': prompt}]}]}, timeout=12)
             if res.status_code == 200:
                 cands = res.json().get('candidates', [])
                 if cands: return cands[0]['content']['parts'][0]['text']
